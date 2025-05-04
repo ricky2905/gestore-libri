@@ -1,13 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, g
-import sqlite3
+import psycopg2
+import psycopg2.extras
+import os
 
 app = Flask(__name__)
-DATABASE = 'libri.db'
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
 def get_db():
     if 'db' not in g:
-        g.db = sqlite3.connect(DATABASE)
-        g.db.row_factory = sqlite3.Row
+        g.db = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
     return g.db
 
 @app.teardown_appcontext
@@ -20,10 +21,12 @@ def close_db(error):
 def index():
     search = request.args.get('q')
     db = get_db()
+    cur = db.cursor()
     if search:
-        collezioni = db.execute("SELECT * FROM collezioni WHERE nome LIKE ?", ('%' + search + '%',)).fetchall()
+        cur.execute("SELECT * FROM collezioni WHERE nome ILIKE %s", (f'%{search}%',))
     else:
-        collezioni = db.execute("SELECT * FROM collezioni").fetchall()
+        cur.execute("SELECT * FROM collezioni")
+    collezioni = cur.fetchall()
     return render_template('index.html', collezioni=collezioni, search=search)
 
 @app.route('/aggiungi_collezione', methods=['GET', 'POST'])
@@ -31,7 +34,8 @@ def aggiungi_collezione():
     if request.method == 'POST':
         nome = request.form['nome']
         db = get_db()
-        db.execute("INSERT INTO collezioni (nome) VALUES (?)", (nome,))
+        cur = db.cursor()
+        cur.execute("INSERT INTO collezioni (nome) VALUES (%s)", (nome,))
         db.commit()
         return redirect(url_for('index'))
     return render_template('aggiungi_collezione.html')
@@ -39,8 +43,9 @@ def aggiungi_collezione():
 @app.route('/elimina_collezione/<int:collezione_id>', methods=['POST'])
 def elimina_collezione(collezione_id):
     db = get_db()
-    db.execute("DELETE FROM libri WHERE collezione_id = ?", (collezione_id,))
-    db.execute("DELETE FROM collezioni WHERE id = ?", (collezione_id,))
+    cur = db.cursor()
+    cur.execute("DELETE FROM libri WHERE collezione_id = %s", (collezione_id,))
+    cur.execute("DELETE FROM collezioni WHERE id = %s", (collezione_id,))
     db.commit()
     return redirect(url_for('index'))
 
@@ -48,16 +53,19 @@ def elimina_collezione(collezione_id):
 def visualizza_collezione(collezione_id):
     search = request.args.get('q')
     db = get_db()
-    collezione = db.execute("SELECT * FROM collezioni WHERE id = ?", (collezione_id,)).fetchone()
+    cur = db.cursor()
+    cur.execute("SELECT * FROM collezioni WHERE id = %s", (collezione_id,))
+    collezione = cur.fetchone()
     if not collezione:
         return "Collezione non trovata", 404
     if search:
-        libri = db.execute(
-            "SELECT * FROM libri WHERE collezione_id = ? AND (titolo LIKE ? OR autore LIKE ?)",
+        cur.execute(
+            "SELECT * FROM libri WHERE collezione_id = %s AND (titolo ILIKE %s OR autore ILIKE %s)",
             (collezione_id, f"%{search}%", f"%{search}%")
-        ).fetchall()
+        )
     else:
-        libri = db.execute("SELECT * FROM libri WHERE collezione_id = ?", (collezione_id,)).fetchall()
+        cur.execute("SELECT * FROM libri WHERE collezione_id = %s", (collezione_id,))
+    libri = cur.fetchall()
     return render_template('collezione.html', collezione=collezione, libri=libri, search=search)
 
 @app.route('/aggiungi_libro/<int:collezione_id>', methods=['POST'])
@@ -66,16 +74,21 @@ def aggiungi_libro(collezione_id):
     autore = request.form['autore']
     anno = request.form.get('anno')
     db = get_db()
-    db.execute("INSERT INTO libri (titolo, autore, anno, collezione_id, comprato) VALUES (?, ?, ?, ?, 0)",
-               (titolo, autore, anno, collezione_id))
+    cur = db.cursor()
+    cur.execute(
+        "INSERT INTO libri (titolo, autore, anno, collezione_id, comprato) VALUES (%s, %s, %s, %s, 0)",
+        (titolo, autore, anno, collezione_id)
+    )
     db.commit()
     return redirect(url_for('visualizza_collezione', collezione_id=collezione_id))
 
 @app.route('/elimina_libro/<int:libro_id>', methods=['POST'])
 def elimina_libro(libro_id):
     db = get_db()
-    collezione = db.execute("SELECT collezione_id FROM libri WHERE id = ?", (libro_id,)).fetchone()
-    db.execute("DELETE FROM libri WHERE id = ?", (libro_id,))
+    cur = db.cursor()
+    cur.execute("SELECT collezione_id FROM libri WHERE id = %s", (libro_id,))
+    collezione = cur.fetchone()
+    cur.execute("DELETE FROM libri WHERE id = %s", (libro_id,))
     db.commit()
     return redirect(url_for('visualizza_collezione', collezione_id=collezione['collezione_id']))
 
@@ -87,14 +100,17 @@ def modifica_libro(libro_id):
     comprato = 1 if request.form.get('comprato') == '1' else 0
 
     db = get_db()
-    db.execute(
-        "UPDATE libri SET titolo = ?, autore = ?, anno = ?, comprato = ? WHERE id = ?",
+    cur = db.cursor()
+    cur.execute(
+        "UPDATE libri SET titolo = %s, autore = %s, anno = %s, comprato = %s WHERE id = %s",
         (titolo, autore, anno, comprato, libro_id)
     )
     db.commit()
 
-    collezione = db.execute("SELECT collezione_id FROM libri WHERE id = ?", (libro_id,)).fetchone()
+    cur.execute("SELECT collezione_id FROM libri WHERE id = %s", (libro_id,))
+    collezione = cur.fetchone()
     return redirect(url_for('visualizza_collezione', collezione_id=collezione['collezione_id']))
 
 if __name__ == '__main__':
     app.run(debug=True)
+

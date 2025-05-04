@@ -1,26 +1,32 @@
-import sqlite3
+import psycopg2
+import os
 
-conn = sqlite3.connect('libri.db')
+# Ottieni la stringa di connessione dal sistema (Render ENV VAR)
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+conn = psycopg2.connect(DATABASE_URL)
 c = conn.cursor()
 
+# Creazione tabella collezioni
 c.execute('''
-    CREATE TABLE collezioni (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+    CREATE TABLE IF NOT EXISTS collezioni (
+        id SERIAL PRIMARY KEY,
         nome TEXT NOT NULL
     )
 ''')
 
+# Creazione tabella libri
 c.execute('''
-    CREATE TABLE libri (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+    CREATE TABLE IF NOT EXISTS libri (
+        id SERIAL PRIMARY KEY,
         titolo TEXT NOT NULL,
         autore TEXT,
         anno INTEGER,
-        collezione_id INTEGER,
-        comprato INTEGER DEFAULT 0,
-        FOREIGN KEY(collezione_id) REFERENCES collezioni(id)
+        collezione_id INTEGER REFERENCES collezioni(id),
+        comprato INTEGER DEFAULT 0
     )
 ''')
 
 conn.commit()
 conn.close()
+
