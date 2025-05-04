@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
+import os
 
 app = Flask(__name__)
+DB_PATH = os.path.join(os.path.dirname(__file__), 'libri.db')
 
 def init_db():
-    conn = sqlite3.connect('libri.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('''
         CREATE TABLE IF NOT EXISTS libri (
@@ -18,7 +20,7 @@ def init_db():
 
 @app.route('/')
 def index():
-    conn = sqlite3.connect('libri.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('SELECT collezione, titolo FROM libri')
     libri = c.fetchall()
@@ -31,7 +33,7 @@ def aggiungi_libro():
     titolo = request.form['titolo']
 
     if collezione and titolo:
-        conn = sqlite3.connect('libri.db')
+        conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute('INSERT INTO libri (collezione, titolo) VALUES (?, ?)', (collezione, titolo))
         conn.commit()
@@ -39,7 +41,7 @@ def aggiungi_libro():
 
     return redirect('/')
 
-if __name__ == '__main__':
-    init_db()
-    app.run(host='0.0.0.0', port=10000)
+# solo su Render chiamato via gunicorn
+init_db()
 
+# non usare app.run per Render
