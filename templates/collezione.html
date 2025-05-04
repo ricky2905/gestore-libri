@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ nome_collezione }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Collezione: {{ nome_collezione }}</h1>
+        <form action="/collezione/{{ collezione_id }}/aggiungi_libro" method="POST">
+            <input type="text" name="titolo" placeholder="Titolo libro" required>
+            <button type="submit">Aggiungi libro</button>
+        </form>
+
+        <ul>
+            {% for libro in libri %}
+                <li>{{ libro[0] }}</li>
+            {% endfor %}
+        </ul>
+
+        <a href="/">← Torna alle collezioni</a>
+    </div>
+</body>
+</html>
+
