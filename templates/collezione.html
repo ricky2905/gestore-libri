@@ -11,7 +11,7 @@
             <li>{{ libro.titolo }} - <em>{{ libro.autore }}</em></li>
         {% endfor %}
     </ul>
-    <a href="{{ url_for('aggiungi_libro', collezione_id=collezione.id) }}">+ Aggiungi Libro</a><br>
+    <a href="{{ url_for('aggiungi_libro', id=collezione.id) }}">+ Aggiungi Libro</a><br>
     <a href="{{ url_for('index') }}">← Torna alla Home</a>
 </body>
 </html>
