@@ -1,58 +1,57 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="it">
 <head>
+    <meta charset="UTF-8">
     <title>Gestore Libri</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-    <div class="container py-4">
-        <h1 class="mb-4">📚 Gestore Libri</h1>
+    <div class="container mt-4">
+        <h1 class="mb-4 text-center">Gestore Collezioni e Libri</h1>
 
-        <div class="row">
-            <div class="col-md-6">
-                <h3>Aggiungi Collezione</h3>
-                <form action="/aggiungi_collezione" method="POST" class="mb-4">
-                    <div class="input-group">
-                        <input type="text" name="nome" class="form-control" placeholder="Nome collezione" required>
-                        <button type="submit" class="btn btn-primary">Aggiungi</button>
-                    </div>
-                </form>
+        <!-- Aggiungi Collezione -->
+        <form action="/aggiungi_collezione" method="POST" class="mb-4 d-flex">
+            <input type="text" name="nome" class="form-control me-2" placeholder="Nuova collezione" required>
+            <button class="btn btn-success">Aggiungi Collezione</button>
+        </form>
+
+        {% for collezione in collezione_libri %}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <strong>{{ collezione.nome }}</strong>
+                <div class="d-flex">
+                    <form action="/elimina_collezione/{{ collezione.id }}" method="POST" class="me-2">
+                        <button class="btn btn-sm btn-danger">Elimina</button>
+                    </form>
+                    <form action="/modifica_collezione/{{ collezione.id }}" method="POST" class="d-flex">
+                        <input type="text" name="nuovo_nome" placeholder="Rinomina" class="form-control form-control-sm me-1">
+                        <button class="btn btn-sm btn-secondary">Modifica</button>
+                    </form>
+                </div>
             </div>
-            <div class="col-md-6">
-                <h3>Aggiungi Libro</h3>
-                <form action="/aggiungi_libro" method="POST">
-                    <div class="mb-2">
-                        <input type="text" name="titolo" class="form-control" placeholder="Titolo libro" required>
-                    </div>
-                    <div class="mb-2">
-                        <select name="collezione_id" class="form-select" required>
-                            {% for nome, libri in collezione_libri.items() %}
-                                <option value="{{ loop.index }}">{{ nome }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-success">Aggiungi</button>
+            <div class="card-body">
+                <ul class="list-group mb-3">
+                    {% for libro in collezione.libri %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ libro[1] }}
+                        <div class="d-flex">
+                            <form action="/elimina_libro/{{ libro[0] }}" method="POST" class="me-2">
+                                <button class="btn btn-sm btn-outline-danger">🗑️</button>
+                            </form>
+                            <form action="/modifica_libro/{{ libro[0] }}" method="POST" class="d-flex">
+                                <input type="text" name="nuovo_titolo" placeholder="Modifica titolo" class="form-control form-control-sm me-1">
+                                <button class="btn btn-sm btn-outline-secondary">✏️</button>
+                            </form>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <form action="/aggiungi_libro/{{ collezione.id }}" method="POST" class="d-flex">
+                    <input type="text" name="titolo" class="form-control me-2" placeholder="Nuovo libro" required>
+                    <button class="btn btn-primary">Aggiungi Libro</button>
                 </form>
             </div>
         </div>
-
-        <hr class="my-4">
-
-        <h3>Collezioni e Libri</h3>
-        {% for nome, libri in collezione_libri.items() %}
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    {{ nome }}
-                </div>
-                <ul class="list-group list-group-flush">
-                    {% for libro in libri %}
-                        <li class="list-group-item">{{ libro }}</li>
-                    {% endfor %}
-                    {% if not libri %}
-                        <li class="list-group-item text-muted">Nessun libro ancora</li>
-                    {% endif %}
-                </ul>
-            </div>
         {% endfor %}
     </div>
 </body>
