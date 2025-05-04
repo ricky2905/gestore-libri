@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Gestore Libri</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <h1>Collezioni</h1>
@@ -13,7 +14,7 @@
 
     <ul>
         {% for collezione in collezioni %}
-            <li>{{ collezione["nome"] }}</li>
+            <li><a href="/collezione/{{ collezione.id }}">{{ collezione.nome }}</a></li>
         {% endfor %}
     </ul>
 </body>
