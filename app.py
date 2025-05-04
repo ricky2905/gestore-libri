@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, abort
 import sqlite3
 import os
 
 app = Flask(__name__)
 
-DATABASE = 'database.db'
+DATABASE = os.path.join(os.path.dirname(__file__), 'libri.db')
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
@@ -22,11 +22,12 @@ def index():
 def aggiungi_collezione():
     if request.method == 'POST':
         nome = request.form['nome']
-        conn = get_db_connection()
-        conn.execute('INSERT INTO collezioni (nome) VALUES (?)', (nome,))
-        conn.commit()
-        conn.close()
-        return redirect(url_for('index'))
+        if nome:
+            conn = get_db_connection()
+            conn.execute('INSERT INTO collezioni (nome) VALUES (?)', (nome,))
+            conn.commit()
+            conn.close()
+            return redirect(url_for('index'))
     return render_template('aggiungi_collezione.html')
 
 @app.route('/collezione/<int:id>')
@@ -36,26 +37,24 @@ def collezione(id):
     libri = conn.execute('SELECT * FROM libri WHERE collezione_id = ?', (id,)).fetchall()
     conn.close()
     if collezione is None:
-        return "Collezione non trovata", 404
+        abort(404)
     return render_template('collezione.html', collezione=collezione, libri=libri)
 
-@app.route('/collezione/<int:id>/aggiungi_libro', methods=['GET', 'POST'])
+@app.route('/aggiungi_libro/<int:id>', methods=['GET', 'POST'])
 def aggiungi_libro(id):
     if request.method == 'POST':
         titolo = request.form['titolo']
         autore = request.form['autore']
-        conn = get_db_connection()
-        conn.execute('INSERT INTO libri (titolo, autore, collezione_id) VALUES (?, ?, ?)', (titolo, autore, id))
-        conn.commit()
-        conn.close()
-        return redirect(url_for('collezione', id=id))
+        if titolo and autore:
+            conn = get_db_connection()
+            conn.execute(
+                'INSERT INTO libri (titolo, autore, collezione_id) VALUES (?, ?, ?)',
+                (titolo, autore, id)
+            )
+            conn.commit()
+            conn.close()
+            return redirect(url_for('collezione', id=id))
     return render_template('aggiungi_libro.html', collezione_id=id)
 
 if __name__ == '__main__':
-    if not os.path.exists(DATABASE):
-        conn = get_db_connection()
-        conn.execute('CREATE TABLE collezioni (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT)')
-        conn.execute('CREATE TABLE libri (id INTEGER PRIMARY KEY AUTOINCREMENT, titolo TEXT, autore TEXT, collezione_id INTEGER)')
-        conn.commit()
-        conn.close()
     app.run(debug=True)
