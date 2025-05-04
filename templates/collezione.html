@@ -1,16 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-    <title>Nuova Collezione</title>
+    <title>{{ collezione.nome }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Aggiungi Collezione</h1>
-    <form method="post">
-        <input type="text" name="nome" placeholder="Nome collezione" required>
-        <button type="submit">Salva</button>
-    </form>
-    <a href="{{ url_for('index') }}">Torna indietro</a>
+    <h1>Collezione: {{ collezione.nome }}</h1>
+    <ul>
+        {% for libro in libri %}
+            <li>{{ libro.titolo }} - <em>{{ libro.autore }}</em></li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('aggiungi_libro', collezione_id=collezione.id) }}">+ Aggiungi Libro</a><br>
+    <a href="{{ url_for('index') }}">← Torna alla Home</a>
 </body>
 </html>
 

@@ -1,17 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
     <title>Aggiungi Libro</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Aggiungi Libro alla Collezione</h1>
-    <form method="post">
+    <h1>Nuovo Libro</h1>
+    <form method="POST">
         <input type="text" name="titolo" placeholder="Titolo" required>
         <input type="text" name="autore" placeholder="Autore" required>
-        <button type="submit">Salva</button>
+        <button type="submit">Aggiungi</button>
     </form>
-    <a href="{{ url_for('collezione', id=collezione_id) }}">Torna alla collezione</a>
+    <a href="{{ url_for('collezione', collezione_id=collezione_id) }}">← Torna alla Collezione</a>
 </body>
 </html>
 

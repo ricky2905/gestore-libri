@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-    <title>Gestore Collezioni</title>
+    <title>Gestore Libri</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Collezioni</h1>
+    <h1>Collezioni di Libri</h1>
     <ul>
-        {% for c in collezioni %}
-            <li><a href="{{ url_for('collezione', id=c.id) }}">{{ c.nome }}</a></li>
+        {% for collezione in collezioni %}
+            <li><a href="{{ url_for('collezione', collezione_id=collezione.id) }}">{{ collezione.nome }}</a></li>
         {% endfor %}
     </ul>
     <a href="{{ url_for('aggiungi_collezione') }}">+ Aggiungi Collezione</a>

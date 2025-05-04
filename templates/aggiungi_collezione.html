@@ -1,16 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-    <title>Nuova Collezione</title>
+    <title>Aggiungi Collezione</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Aggiungi Collezione</h1>
-    <form method="post">
+    <h1>Nuova Collezione</h1>
+    <form method="POST">
         <input type="text" name="nome" placeholder="Nome collezione" required>
-        <button type="submit">Salva</button>
+        <button type="submit">Aggiungi</button>
     </form>
-    <a href="{{ url_for('index') }}">Torna indietro</a>
+    <a href="{{ url_for('index') }}">← Torna alla Home</a>
 </body>
 </html>
 
