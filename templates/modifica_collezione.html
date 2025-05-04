@@ -2,14 +2,14 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Aggiungi Collezione</title>
+    <title>Modifica Collezione</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Aggiungi una Nuova Collezione</h1>
+    <h1>Modifica Collezione</h1>
     <form method="post" class="form">
-        <input type="text" name="nome" placeholder="Nome collezione" required>
-        <button type="submit">Salva</button>
+        <input type="text" name="nome" value="{{ nome }}" required>
+        <button type="submit">Salva Modifiche</button>
     </form>
     <a href="/" class="btn secondary">← Torna indietro</a>
 </body>

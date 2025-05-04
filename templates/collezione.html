@@ -1,18 +1,30 @@
 <!doctype html>
-<html>
+<html lang="it">
 <head>
-    <title>{{ collezione.nome }}</title>
+    <meta charset="UTF-8">
+    <title>Libri in {{ nome_collezione }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>{{ collezione.nome }}</h1>
-    <ul>
+    <h1>Libri in "{{ nome_collezione }}"</h1>
+
+    <form method="get" class="search-form">
+        <input type="text" name="q" placeholder="Cerca libro..." value="{{ request.args.get('q', '') }}">
+        <button type="submit">Cerca</button>
+    </form>
+
+    <a href="/aggiungi_libro/{{ collezione_id }}" class="btn">➕ Aggiungi Libro</a>
+    <a href="/" class="btn secondary">🏠 Torna alle Collezioni</a>
+
+    <ul class="book-list">
         {% for libro in libri %}
-        <li>{{ libro.titolo }} di {{ libro.autore }}</li>
+        <li>
+            <strong>{{ libro[1] }}</strong> — <em>{{ libro[2] }}</em>
+            <a href="/modifica_libro/{{ libro[0] }}" class="edit">✏️</a>
+            <a href="/elimina_libro/{{ libro[0] }}" class="delete" onclick="return confirm('Eliminare questo libro?')">❌</a>
+        </li>
         {% endfor %}
     </ul>
-    <a href="{{ url_for('aggiungi_libro', collezione_id=collezione.id) }}">+ Aggiungi Libro</a><br>
-    <a href="{{ url_for('index') }}">← Torna alle collezioni</a>
 </body>
 </html>
 

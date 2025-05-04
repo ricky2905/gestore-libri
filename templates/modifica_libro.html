@@ -2,15 +2,15 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Aggiungi Libro</title>
+    <title>Modifica Libro</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Aggiungi un Libro</h1>
+    <h1>Modifica Libro</h1>
     <form method="post" class="form">
-        <input type="text" name="titolo" placeholder="Titolo" required>
-        <input type="text" name="autore" placeholder="Autore" required>
-        <button type="submit">Salva</button>
+        <input type="text" name="titolo" value="{{ titolo }}" required>
+        <input type="text" name="autore" value="{{ autore }}" required>
+        <button type="submit">Salva Modifiche</button>
     </form>
     <a href="/collezione/{{ collezione_id }}" class="btn secondary">← Torna indietro</a>
 </body>
