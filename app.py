@@ -3,102 +3,124 @@ import sqlite3
 
 app = Flask(__name__)
 
-DB_NAME = "libri.db"
-
-def get_db_connection():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-@app.route("/")
+# Home: lista collezioni con ricerca
+@app.route('/')
 def index():
-    conn = get_db_connection()
-    collezioni = conn.execute("SELECT * FROM collezioni").fetchall()
+    search = request.args.get('search', '')
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    if search:
+        cursor.execute("SELECT * FROM collezioni WHERE nome LIKE ?", ('%' + search + '%',))
+    else:
+        cursor.execute("SELECT * FROM collezioni")
+    collezioni = cursor.fetchall()
     conn.close()
-    return render_template("index.html", collezioni=collezioni)
+    return render_template('index.html', collezioni=collezioni, search=search)
 
-@app.route("/aggiungi_collezione", methods=["GET", "POST"])
+# Aggiungi collezione
+@app.route('/aggiungi_collezione', methods=['GET', 'POST'])
 def aggiungi_collezione():
-    if request.method == "POST":
-        nome = request.form["nome"]
-        descrizione = request.form["descrizione"]
-        conn = get_db_connection()
-        conn.execute("INSERT INTO collezioni (nome, descrizione) VALUES (?, ?)", (nome, descrizione))
+    if request.method == 'POST':
+        nome = request.form['nome']
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO collezioni (nome) VALUES (?)", (nome,))
         conn.commit()
         conn.close()
-        return redirect(url_for("index"))
-    return render_template("aggiungi_collezione.html")
+        return redirect('/')
+    return render_template('aggiungi_collezione.html')
 
-@app.route("/collezione/<int:id>")
-def collezione(id):
-    conn = get_db_connection()
-    collezione = conn.execute("SELECT * FROM collezioni WHERE id = ?", (id,)).fetchone()
-    libri = conn.execute("SELECT * FROM libri WHERE collezione_id = ?", (id,)).fetchall()
-    conn.close()
-    return render_template("collezione.html", collezione=collezione, libri=libri)
-
-@app.route("/aggiungi_libro/<int:collezione_id>", methods=["GET", "POST"])
-def aggiungi_libro(collezione_id):
-    if request.method == "POST":
-        titolo = request.form["titolo"]
-        autore = request.form["autore"]
-        anno = request.form["anno"]
-        conn = get_db_connection()
-        conn.execute(
-            "INSERT INTO libri (titolo, autore, anno, collezione_id) VALUES (?, ?, ?, ?)",
-            (titolo, autore, anno, collezione_id),
-        )
-        conn.commit()
-        conn.close()
-        return redirect(url_for("collezione", id=collezione_id))
-    return render_template("aggiungi_libro.html", collezione_id=collezione_id)
-
-@app.route("/elimina_libro/<int:id>")
-def elimina_libro(id):
-    conn = get_db_connection()
-    libro = conn.execute("SELECT collezione_id FROM libri WHERE id = ?", (id,)).fetchone()
-    conn.execute("DELETE FROM libri WHERE id = ?", (id,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for("collezione", id=libro["collezione_id"]))
-
-@app.route("/elimina_collezione/<int:id>")
-def elimina_collezione(id):
-    conn = get_db_connection()
-    conn.execute("DELETE FROM libri WHERE collezione_id = ?", (id,))
-    conn.execute("DELETE FROM collezioni WHERE id = ?", (id,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for("index"))
-
-@app.route("/modifica_libro/<int:id>", methods=["GET", "POST"])
-def modifica_libro(id):
-    conn = get_db_connection()
-    libro = conn.execute("SELECT * FROM libri WHERE id = ?", (id,)).fetchone()
-    if request.method == "POST":
-        titolo = request.form["titolo"]
-        autore = request.form["autore"]
-        anno = request.form["anno"]
-        conn.execute("UPDATE libri SET titolo = ?, autore = ?, anno = ? WHERE id = ?", (titolo, autore, anno, id))
-        conn.commit()
-        conn.close()
-        return redirect(url_for("collezione", id=libro["collezione_id"]))
-    conn.close()
-    return render_template("modifica_libro.html", libro=libro)
-
-@app.route("/modifica_collezione/<int:id>", methods=["GET", "POST"])
+# Modifica collezione
+@app.route('/modifica_collezione/<int:id>', methods=['GET', 'POST'])
 def modifica_collezione(id):
-    conn = get_db_connection()
-    collezione = conn.execute("SELECT * FROM collezioni WHERE id = ?", (id,)).fetchone()
-    if request.method == "POST":
-        nome = request.form["nome"]
-        descrizione = request.form["descrizione"]
-        conn.execute("UPDATE collezioni SET nome = ?, descrizione = ? WHERE id = ?", (nome, descrizione, id))
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    if request.method == 'POST':
+        nuovo_nome = request.form['nome']
+        cursor.execute("UPDATE collezioni SET nome = ? WHERE id = ?", (nuovo_nome, id))
         conn.commit()
         conn.close()
-        return redirect(url_for("index"))
+        return redirect('/')
+    cursor.execute("SELECT * FROM collezioni WHERE id = ?", (id,))
+    collezione = cursor.fetchone()
     conn.close()
-    return render_template("modifica_collezione.html", collezione=collezione)
+    return render_template('modifica_collezione.html', collezione=collezione)
 
-if __name__ == "__main__":
+# Elimina collezione
+@app.route('/elimina_collezione/<int:id>')
+def elimina_collezione(id):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM libri WHERE collezione_id = ?", (id,))
+    cursor.execute("DELETE FROM collezioni WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+    return redirect('/')
+
+# Lista libri per collezione
+@app.route('/collezione/<int:id>')
+def collezione(id):
+    search = request.args.get('search', '')
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT nome FROM collezioni WHERE id = ?", (id,))
+    collezione_nome = cursor.fetchone()[0]
+    if search:
+        cursor.execute("SELECT * FROM libri WHERE collezione_id = ? AND titolo LIKE ?", (id, '%' + search + '%'))
+    else:
+        cursor.execute("SELECT * FROM libri WHERE collezione_id = ?", (id,))
+    libri = cursor.fetchall()
+    conn.close()
+    return render_template('collezione.html', libri=libri, collezione_id=id, collezione_nome=collezione_nome, search=search)
+
+# Aggiungi libro
+@app.route('/aggiungi_libro/<int:collezione_id>', methods=['GET', 'POST'])
+def aggiungi_libro(collezione_id):
+    if request.method == 'POST':
+        titolo = request.form['titolo']
+        autore = request.form['autore']
+        anno = request.form['anno']
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO libri (titolo, autore, anno, collezione_id) VALUES (?, ?, ?, ?)",
+                       (titolo, autore, anno, collezione_id))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('collezione', id=collezione_id))
+    return render_template('aggiungi_libro.html', collezione_id=collezione_id)
+
+# Modifica libro
+@app.route('/modifica_libro/<int:id>', methods=['GET', 'POST'])
+def modifica_libro(id):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    if request.method == 'POST':
+        titolo = request.form['titolo']
+        autore = request.form['autore']
+        anno = request.form['anno']
+        cursor.execute("UPDATE libri SET titolo = ?, autore = ?, anno = ? WHERE id = ?", (titolo, autore, anno, id))
+        conn.commit()
+        cursor.execute("SELECT collezione_id FROM libri WHERE id = ?", (id,))
+        collezione_id = cursor.fetchone()[0]
+        conn.close()
+        return redirect(url_for('collezione', id=collezione_id))
+    cursor.execute("SELECT * FROM libri WHERE id = ?", (id,))
+    libro = cursor.fetchone()
+    conn.close()
+    return render_template('modifica_libro.html', libro=libro)
+
+# Elimina libro
+@app.route('/elimina_libro/<int:id>')
+def elimina_libro(id):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT collezione_id FROM libri WHERE id = ?", (id,))
+    collezione_id = cursor.fetchone()[0]
+    cursor.execute("DELETE FROM libri WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('collezione', id=collezione_id))
+
+# Avvio locale
+if __name__ == '__main__':
     app.run(debug=True)
