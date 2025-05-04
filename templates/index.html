@@ -8,6 +8,7 @@
 <body>
     <div class="container">
         <h1>Le tue Collezioni</h1>
+
         <form method="get" action="/">
             <input type="text" name="q" placeholder="Cerca collezione" value="{{ search }}">
             <button type="submit">Cerca</button>
@@ -21,6 +22,13 @@
                     <a href="{{ url_for('visualizza_collezione', collezione_id=collezione[0]) }}">
                         {{ collezione[1] }}
                     </a>
+
+                    <!-- Pulsante per eliminare la collezione -->
+                    <form method="post" action="{{ url_for('elimina_collezione', collezione_id=collezione[0]) }}" style="display:inline;">
+                        <button type="submit" class="btn-delete" onclick="return confirm('Sei sicuro di voler eliminare questa collezione e tutti i suoi libri?')">
+                            🗑️
+                        </button>
+                    </form>
                 </li>
             {% else %}
                 <li>Nessuna collezione trovata.</li>
