@@ -5,14 +5,14 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Collezione: {{ collezione.nome }}</h1>
+    <h1>{{ collezione.nome }}</h1>
     <ul>
         {% for libro in libri %}
-            <li>{{ libro.titolo }} - <em>{{ libro.autore }}</em></li>
+        <li>{{ libro.titolo }} di {{ libro.autore }}</li>
         {% endfor %}
     </ul>
-    <a href="{{ url_for('aggiungi_libro', id=collezione.id) }}">+ Aggiungi Libro</a><br>
-    <a href="{{ url_for('index') }}">← Torna alla Home</a>
+    <a href="{{ url_for('aggiungi_libro', collezione_id=collezione.id) }}">+ Aggiungi Libro</a><br>
+    <a href="{{ url_for('index') }}">← Torna alle collezioni</a>
 </body>
 </html>
 
