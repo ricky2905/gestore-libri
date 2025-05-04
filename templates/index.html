@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Gestore Collezioni</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Gestore Libri</title>
 </head>
 <body>
-    <div class="container">
-        <h1>Le tue collezioni</h1>
-        <form action="/aggiungi_collezione" method="POST">
-            <input type="text" name="nome" placeholder="Nome collezione" required>
-            <button type="submit">Aggiungi collezione</button>
-        </form>
+    <h1>Collezioni</h1>
 
-        <ul>
-            {% for collezione in collezioni %}
-                <li><a href="{{ url_for('vista_collezione', id=collezione[0]) }}">{{ collezione[1] }}</a></li>
-            {% endfor %}
-        </ul>
-    </div>
+    <form action="/aggiungi" method="post">
+        <input type="text" name="nome" placeholder="Nuova collezione" required>
+        <button type="submit">Aggiungi</button>
+    </form>
+
+    <ul>
+        {% for collezione in collezioni %}
+            <li>{{ collezione["nome"] }}</li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
 
