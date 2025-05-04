@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gestore Libri</title>
+</head>
+<body>
+    <h1>Gestore Libri</h1>
+    <form action="/aggiungi" method="POST">
+        <input type="text" name="collezione" placeholder="Collezione" required>
+        <input type="text" name="titolo" placeholder="Titolo" required>
+        <button type="submit">Aggiungi</button>
+    </form>
+
+    <ul>
+        {% for collezione, titolo in libri %}
+            <li><strong>{{ collezione }}</strong>: {{ titolo }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+
