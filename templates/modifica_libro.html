@@ -1,18 +1,21 @@
-<!doctype html>
-<html lang="it">
+<!DOCTYPE html>
+<html>
 <head>
     <meta charset="UTF-8">
     <title>Modifica Libro</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Modifica Libro</h1>
-    <form method="post" class="form">
-        <input type="text" name="titolo" value="{{ titolo }}" required>
-        <input type="text" name="autore" value="{{ autore }}" required>
-        <button type="submit">Salva Modifiche</button>
-    </form>
-    <a href="/collezione/{{ collezione_id }}" class="btn secondary">← Torna indietro</a>
+    <div class="container">
+        <h1>Modifica Libro</h1>
+        <form method="post">
+            <input type="text" name="titolo" value="{{ libro['titolo'] }}" required>
+            <input type="text" name="autore" value="{{ libro['autore'] }}" required>
+            <input type="number" name="anno" value="{{ libro['anno'] }}">
+            <button type="submit">Salva modifiche</button>
+        </form>
+        <a href="{{ url_for('visualizza_collezione', collezione_id=libro['collezione_id']) }}">⬅ Torna indietro</a>
+    </div>
 </body>
 </html>
 

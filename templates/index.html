@@ -1,31 +1,32 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Le Tue Collezioni</title>
+    <title>Collezioni</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Le Tue Collezioni</h1>
+    <div class="container">
+        <h1>Le tue Collezioni</h1>
+        <form method="get" action="/">
+            <input type="text" name="q" placeholder="Cerca collezione" value="{{ search }}">
+            <button type="submit">Cerca</button>
+        </form>
 
-    <form action="/" method="get" class="search-form">
-        <input type="text" name="q" placeholder="Cerca collezione..." value="{{ request.args.get('q', '') }}">
-        <button type="submit">Cerca</button>
-    </form>
+        <a href="{{ url_for('aggiungi_collezione') }}" class="btn">+ Aggiungi Collezione</a>
 
-    <a href="/aggiungi_collezione" class="btn">➕ Nuova Collezione</a>
-
-    <ul class="collection-list">
-        {% for collezione in collezioni %}
-        <li>
-            <a href="{{ url_for('visualizza_collezione', collezione_id=collezione[0]) }}">
-                📚 {{ collezione[1] }}
-            </a>
-            <a href="/modifica_collezione/{{ collezione[0] }}" class="edit">✏️</a>
-            <a href="/elimina_collezione/{{ collezione[0] }}" class="delete" onclick="return confirm('Eliminare questa collezione?')">❌</a>
-        </li>
-        {% endfor %}
-    </ul>
+        <ul class="lista">
+            {% for collezione in collezioni %}
+                <li>
+                    <a href="{{ url_for('visualizza_collezione', collezione_id=collezione[0]) }}">
+                        {{ collezione[1] }}
+                    </a>
+                </li>
+            {% else %}
+                <li>Nessuna collezione trovata.</li>
+            {% endfor %}
+        </ul>
+    </div>
 </body>
 </html>
 

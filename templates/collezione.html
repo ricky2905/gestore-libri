@@ -1,30 +1,61 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Libri in {{ nome_collezione }}</title>
+    <title>{{ collezione['nome'] }} - Libri</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Libri in "{{ nome_collezione }}"</h1>
+    <div class="container">
+        <h1>📚 Libri nella collezione: "{{ collezione['nome'] }}"</h1>
 
-    <form method="get" class="search-form">
-        <input type="text" name="q" placeholder="Cerca libro..." value="{{ request.args.get('q', '') }}">
-        <button type="submit">Cerca</button>
-    </form>
+        <!-- Pulsante per tornare alla home -->
+        <a href="{{ url_for('index') }}" class="back-button">🏠 Torna alla Home</a>
 
-    <a href="/aggiungi_libro/{{ collezione_id }}" class="btn">➕ Aggiungi Libro</a>
-    <a href="/" class="btn secondary">🏠 Torna alle Collezioni</a>
+        <!-- Sezione Ricerca -->
+        <form method="get" class="search-bar">
+            <input type="text" name="q" placeholder="Cerca titolo o autore..." value="{{ search or '' }}">
+            <button type="submit">🔍 Cerca</button>
+        </form>
 
-    <ul class="book-list">
-        {% for libro in libri %}
-        <li>
-            <strong>{{ libro[1] }}</strong> — <em>{{ libro[2] }}</em>
-            <a href="/modifica_libro/{{ libro[0] }}" class="edit">✏️</a>
-            <a href="/elimina_libro/{{ libro[0] }}" class="delete" onclick="return confirm('Eliminare questo libro?')">❌</a>
-        </li>
-        {% endfor %}
-    </ul>
+        <!-- Elenco Libri -->
+        {% if libri %}
+            <ul class="libri-lista">
+                {% for libro in libri %}
+                    <li>
+                        <strong>{{ libro['titolo'] }}</strong> di {{ libro['autore'] }} ({{ libro['anno'] or 'Anno sconosciuto' }})
+                        <div class="azioni">
+                            <!-- Modifica -->
+                            <form action="{{ url_for('modifica_libro', libro_id=libro['id']) }}" method="post" class="inline-form">
+                                <input type="text" name="titolo" value="{{ libro['titolo'] }}" required>
+                                <input type="text" name="autore" value="{{ libro['autore'] }}" required>
+                                <input type="number" name="anno" value="{{ libro['anno'] or '' }}">
+                                <button type="submit">✏️ Modifica</button>
+                            </form>
+
+                            <!-- Elimina -->
+                            <form action="{{ url_for('elimina_libro', libro_id=libro['id']) }}" method="post" class="inline-form">
+                                <button type="submit" onclick="return confirm('Sei sicuro di voler eliminare questo libro?')">🗑️ Elimina</button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Nessun libro trovato in questa collezione.</p>
+        {% endif %}
+
+        <hr>
+
+        <!-- Aggiungi Nuovo Libro -->
+        <h2>➕ Aggiungi un nuovo libro</h2>
+        <form method="post" action="{{ url_for('aggiungi_libro', collezione_id=collezione['id']) }}">
+            <input type="text" name="titolo" placeholder="Titolo" required>
+            <input type="text" name="autore" placeholder="Autore" required>
+            <input type="number" name="anno" placeholder="Anno">
+            <button type="submit">📥 Aggiungi libro</button>
+        </form>
+    </div>
 </body>
 </html>
 

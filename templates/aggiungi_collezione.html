@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -6,12 +6,14 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Aggiungi una Nuova Collezione</h1>
-    <form method="post" class="form">
-        <input type="text" name="nome" placeholder="Nome collezione" required>
-        <button type="submit">Salva</button>
-    </form>
-    <a href="/" class="btn secondary">← Torna indietro</a>
+    <div class="container">
+        <h1>Aggiungi una nuova collezione</h1>
+        <form method="post">
+            <input type="text" name="nome" placeholder="Nome della collezione" required>
+            <button type="submit">Salva</button>
+        </form>
+        <a href="{{ url_for('index') }}">⬅ Torna indietro</a>
+    </div>
 </body>
 </html>
 

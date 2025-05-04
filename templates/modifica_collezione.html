@@ -1,17 +1,19 @@
-<!doctype html>
-<html lang="it">
+<!DOCTYPE html>
+<html>
 <head>
     <meta charset="UTF-8">
     <title>Modifica Collezione</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Modifica Collezione</h1>
-    <form method="post" class="form">
-        <input type="text" name="nome" value="{{ nome }}" required>
-        <button type="submit">Salva Modifiche</button>
-    </form>
-    <a href="/" class="btn secondary">← Torna indietro</a>
+    <div class="container">
+        <h1>Modifica Collezione</h1>
+        <form method="post">
+            <input type="text" name="nome" value="{{ collezione['nome'] }}" required>
+            <button type="submit">Salva modifiche</button>
+        </form>
+        <a href="{{ url_for('index') }}">⬅ Torna indietro</a>
+    </div>
 </body>
 </html>
 
