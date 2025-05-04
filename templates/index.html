@@ -8,7 +8,7 @@
     <h1>Collezioni di Libri</h1>
     <ul>
         {% for collezione in collezioni %}
-            <li><a href="{{ url_for('collezione', collezione_id=collezione.id) }}">{{ collezione.nome }}</a></li>
+            <li><a href="{{ url_for('collezione', id=collezione.id) }}">{{ collezione.nome }}</a></li>
         {% endfor %}
     </ul>
     <a href="{{ url_for('aggiungi_collezione') }}">+ Aggiungi Collezione</a>
