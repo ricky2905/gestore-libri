@@ -1,73 +1,70 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, request, render_template, redirect
 import sqlite3
+import os
 
 app = Flask(__name__)
 
-def init_db():
-    conn = sqlite3.connect('libri.db')
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS collezioni (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL UNIQUE
-        )
-    ''')
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS libri (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            titolo TEXT NOT NULL,
-            collezione_id INTEGER NOT NULL,
-            FOREIGN KEY (collezione_id) REFERENCES collezioni(id)
-        )
-    ''')
-    conn.commit()
-    conn.close()
+def get_db_connection():
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
-@app.route('/')
+def init_db():
+    if not os.path.exists('database.db'):
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS collezioni (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome TEXT NOT NULL
+            )
+        ''')
+
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS libri (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                collezione_id INTEGER NOT NULL,
+                nome TEXT NOT NULL,
+                FOREIGN KEY (collezione_id) REFERENCES collezioni(id) ON DELETE CASCADE
+            )
+        ''')
+
+        conn.commit()
+        conn.close()
+        print("✅ Database inizializzato su Render")
+
+# Esegui solo su Render
+if os.environ.get("RENDER") == "true":
+    init_db()
+
+@app.route("/")
 def index():
-    conn = sqlite3.connect('libri.db')
+    conn = get_db_connection()
     c = conn.cursor()
     c.execute('SELECT id, nome FROM collezioni')
     collezioni = c.fetchall()
     conn.close()
-    return render_template('index.html', collezioni=collezioni)
+    return render_template("index.html", collezioni=collezioni)
 
-@app.route('/collezione/<int:id>')
-def vista_collezione(id):
-    conn = sqlite3.connect('libri.db')
+@app.route("/aggiungi", methods=["POST"])
+def aggiungi():
+    nome_collezione = request.form["nome"]
+    conn = get_db_connection()
     c = conn.cursor()
-    c.execute('SELECT nome FROM collezioni WHERE id = ?', (id,))
-    nome_collezione = c.fetchone()
-    if not nome_collezione:
-        return "Collezione non trovata", 404
-    nome_collezione = nome_collezione[0]
-    c.execute('SELECT titolo FROM libri WHERE collezione_id = ?', (id,))
-    libri = c.fetchall()
+    c.execute("INSERT INTO collezioni (nome) VALUES (?)", (nome_collezione,))
+    conn.commit()
     conn.close()
-    return render_template('collezione.html', collezione_id=id, nome_collezione=nome_collezione, libri=libri)
+    return redirect("/")
 
-@app.route('/aggiungi_collezione', methods=['POST'])
-def aggiungi_collezione():
-    nome = request.form['nome']
-    if nome:
-        conn = sqlite3.connect('libri.db')
-        c = conn.cursor()
-        c.execute('INSERT OR IGNORE INTO collezioni (nome) VALUES (?)', (nome,))
-        conn.commit()
-        conn.close()
-    return redirect('/')
+@app.route("/elimina/<int:id>", methods=["POST"])
+def elimina(id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("DELETE FROM collezioni WHERE id=?", (id,))
+    conn.commit()
+    conn.close()
+    return redirect("/")
 
-@app.route('/collezione/<int:id>/aggiungi_libro', methods=['POST'])
-def aggiungi_libro(id):
-    titolo = request.form['titolo']
-    if titolo:
-        conn = sqlite3.connect('libri.db')
-        c = conn.cursor()
-        c.execute('INSERT INTO libri (titolo, collezione_id) VALUES (?, ?)', (titolo, id))
-        conn.commit()
-        conn.close()
-    return redirect(url_for('vista_collezione', id=id))
-
-if __name__ == '__main__':
-    init_db()
-    app.run(host='0.0.0.0', port=10000)
+if __name__ == "__main__":
+    app.run(debug=True)
