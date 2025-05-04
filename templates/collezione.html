@@ -19,6 +19,19 @@
             <button type="submit">Cerca</button>
         </form>
 
+        <!-- Aggiunta libro (spostata sopra la lista) -->
+        <h2>Aggiungi nuovo libro</h2>
+        <form method="post" action="{{ url_for('aggiungi_libro', collezione_id=collezione['id']) }}">
+            <input type="text" name="titolo" placeholder="Titolo" required>
+            <input type="text" name="autore" placeholder="Autore" required>
+            <input type="number" name="anno" placeholder="Anno">
+            <button type="submit">Aggiungi</button>
+        </form>
+
+        <!-- Conteggio libri -->
+        <p>Totale libri: <strong>{{ libri|length }}</strong></p>
+
+        <!-- Lista libri -->
         <table>
             <thead>
                 <tr>
@@ -50,14 +63,6 @@
                 {% endfor %}
             </tbody>
         </table>
-
-        <h2>Aggiungi nuovo libro</h2>
-        <form method="post" action="{{ url_for('aggiungi_libro', collezione_id=collezione['id']) }}">
-            <input type="text" name="titolo" placeholder="Titolo" required>
-            <input type="text" name="autore" placeholder="Autore" required>
-            <input type="number" name="anno" placeholder="Anno">
-            <button type="submit">Aggiungi</button>
-        </form>
 
         <br><a href="{{ url_for('index') }}">← Torna alla Home</a>
     </div>
