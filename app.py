@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, g
 import sqlite3
 
 app = Flask(__name__)
-DATABASE = 'database.db'
+DATABASE = 'libri.db'
 
 def get_db():
     if 'db' not in g:
