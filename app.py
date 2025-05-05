@@ -111,6 +111,6 @@ def modifica_libro(libro_id):
     collezione = cur.fetchone()
     return redirect(url_for('visualizza_collezione', collezione_id=collezione['collezione_id']))
 
+# Nota: questa parte è ignorata da Railway (usa gunicorn), ma utile localmente
 if __name__ == '__main__':
-    app.run(debug=True)
-
+    app.run(debug=os.getenv("FLASK_DEBUG") == "1")

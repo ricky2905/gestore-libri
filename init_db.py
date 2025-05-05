@@ -1,10 +1,9 @@
 import psycopg2
 import os
+from psycopg2.extras import RealDictCursor
 
-# Ottieni la stringa di connessione dal sistema (Render ENV VAR)
 DATABASE_URL = os.environ.get("DATABASE_URL")
-
-conn = psycopg2.connect(DATABASE_URL)
+conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
 c = conn.cursor()
 
 # Creazione tabella collezioni
@@ -29,4 +28,3 @@ c.execute('''
 
 conn.commit()
 conn.close()
-
